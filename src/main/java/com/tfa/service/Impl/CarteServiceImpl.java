@@ -27,26 +27,28 @@ public class CarteServiceImpl implements CarteService {
 	private final CarteRepository crepo;
 	private final DetenteurRepository drepo;
 	private final ModelMapper mapper;
-	
+
 	@Override
-	public CarteDto creeCarte(CarteDto dto,String numeroDetenteur) {
-		Detenteur  detenteur = drepo.findByNumeroUnique(numeroDetenteur);
-		
-		if(detenteur == null) {
+	public CarteDto creeCarte(CarteDto dto, String numeroDetenteur) {
+		Detenteur detenteur = drepo.findByNumeroUnique(numeroDetenteur);
+
+		if (detenteur == null) {
 			log.info("Il n'existe pas de détenteur avec ce nurmero");
 			return null;
 		}
+
 		dto.setNumeroDetenteur(numeroDetenteur);
 		dto.setNumeroCarte(numeroUnique(16));
 		Carte toBeSaved = mapper.map(dto, Carte.class);
-		return mapper.map(toBeSaved, CarteDto.class);
+
+		return mapper.map(crepo.save(toBeSaved), CarteDto.class);
 	}
 
 	@Override
 	public CarteDto modifieCarte(String numeroCarte, CarteDto dto) {
 		Carte carte = crepo.findByNumeroCarte(numeroCarte);
-		
-		if(carte == null) {
+
+		if (carte == null) {
 			log.warn("Cette carte n'existe pas!");
 			return dto;
 		}
@@ -72,8 +74,8 @@ public class CarteServiceImpl implements CarteService {
 	@Override
 	public CarteDto obtenirCarte(String numeroCarte) {
 		Carte carte = crepo.findByNumeroCarte(numeroCarte);
-		
-		if(carte == null) {
+
+		if (carte == null) {
 			log.warn("Cette carte n'existe pas!");
 			return null;
 		}
@@ -82,39 +84,39 @@ public class CarteServiceImpl implements CarteService {
 
 	@Override
 	public List<CarteDto> obtenirCartes() {
-		
+
 		List<Carte> cartes = crepo.findAll();
-		
-		if(CollectionUtils.isEmpty(cartes)) {
+
+		if (CollectionUtils.isEmpty(cartes)) {
 			log.warn("Il n'existe pas de carte!");
 			return Collections.emptyList();
 		}
-		
+
 		return cartes.stream().map(carte -> mapper.map(carte, CarteDto.class)).toList();
 	}
 
 	@Override
 	public List<CarteDto> obtenirCartesParDetenteur(String numeroDetenteur) {
 		List<Carte> cartes = crepo.findByNumeroDetenteur(numeroDetenteur);
-		
-		if(CollectionUtils.isEmpty(cartes)) {
+
+		if (CollectionUtils.isEmpty(cartes)) {
 			log.warn("Il n'existe pas de carte!");
 			return Collections.emptyList();
 		}
-		
+
 		return cartes.stream().map(carte -> mapper.map(carte, CarteDto.class)).toList();
 	}
 
 	@Override
 	public DetenteurDto obtenirDetenteur(String numeroCarte) {
-		
+
 		Carte carte = crepo.findByNumeroCarte(numeroCarte);
-		if(carte == null) {
+		if (carte == null) {
 			log.warn("Cette carte est inexistante!");
 			return null;
 		}
 		Detenteur detenteur = drepo.findByNumeroUnique(carte.getNumeroDetenteur());
-		
+
 		return mapper.map(detenteur, DetenteurDto.class);
 	}
 
